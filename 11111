@@ -1,0 +1,63 @@
+Поворотный стол на шаговом двигателе 
+и мембранной клавиатуре
+1.2 нарпавление
+/3 4 скорость 
+
+
+#include <Stepper.h>
+#include <Keypad.h>
+
+// Количество шагов на оборот двигателя
+const int stepsPerRevolution = 200;
+
+// Инициализация шагового двигателя с количеством шагов на оборот
+Stepper myStepper(stepsPerRevolution, 4, 5);
+
+// Определяем кнопки клавиатуры
+const byte ROWS = 1; // Количество строк
+const byte COLS = 4; // Количество столбцов
+
+// Массив символов клавиатуры
+char keys[ROWS][COLS] = {
+  {'1', '2', '3', '4'}
+};
+
+byte rowPins[ROWS] = {8}; // Пины, к которым подключены строки
+byte colPins[COLS] = {9, 10, 11, 12}; // Пины, к которым подключены столбцы
+
+// Создаем экземпляр Keypad
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+// Переменные для управления скоростью и направлением
+int motorSpeed = 60; // Начальная скорость (в RPM)
+int motorDirection = 1; // 1 - вправо, -1 - влево
+
+void setup() {
+  Serial.begin(9600);
+  myStepper.setSpeed(motorSpeed);
+}
+
+void loop() {
+  char key = keypad.getKey();
+
+  if (key) {
+    switch (key) {
+      case '1':
+        motorDirection = -1; // Влево
+        break;
+      case '2':
+        motorDirection = 1; // Вправо
+        break;
+      case '3':
+        motorSpeed = max(motorSpeed - 10, 10); // Уменьшение скорости
+        myStepper.setSpeed(motorSpeed);
+        break;
+      case '4':
+        motorSpeed = min(motorSpeed + 10, 200); // Увеличение скорости
+        myStepper.setSpeed(motorSpeed);
+        break;
+    }
+  }
+
+  myStepper.step(motorDirection); // Выполняем шаг в указанном направлении
+}
